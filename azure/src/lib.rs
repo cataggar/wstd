@@ -35,7 +35,11 @@ use typespec_client_core::http::{BufResponse, HttpClient, Request};
 use typespec_client_core::time::Duration;
 use wstd::http::{Body as WstdBody, Client};
 
-/// Set the wstd-based async runtime and HTTP client as the default for the Azure SDK.
+/// Set the wstd-based async runtime as the default for the Azure SDK.
+///
+/// This configures the global async runtime that the Azure SDK will use for
+/// spawning tasks and sleeping. The HTTP client needs to be provided separately
+/// when creating Azure SDK service clients using `http_client()`.
 ///
 /// This should be called once at the start of your application before using any
 /// Azure SDK functionality.
@@ -52,7 +56,11 @@ use wstd::http::{Body as WstdBody, Client};
 /// #[wstd::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     set_wstd_runtime()?;
-///     // Use Azure SDK...
+///     
+///     // When creating Azure SDK clients, provide the HTTP client:
+///     // let http_client = wstd_azure::http_client();
+///     // let client = SomeAzureClient::new(...).with_http_client(http_client);
+///     
 ///     Ok(())
 /// }
 /// ```
@@ -121,7 +129,7 @@ impl HttpClient for WstdHttpClient {
     ) -> typespec_client_core::Result<BufResponse> {
         // Convert the Azure SDK request to a wstd http request
         let url = request.url().to_string();
-        let method = convert_method(request.method());
+        let method = convert_method(request.method())?;
 
         let mut http_request = http::Request::builder().method(method).uri(&url);
 
@@ -178,28 +186,40 @@ impl HttpClient for WstdHttpClient {
     }
 }
 
-fn convert_method(method: typespec_client_core::http::Method) -> http::Method {
+fn convert_method(
+    method: typespec_client_core::http::Method,
+) -> typespec_client_core::Result<http::Method> {
     use typespec_client_core::http::Method;
-    match method {
+    Ok(match method {
         Method::Get => http::Method::GET,
         Method::Post => http::Method::POST,
         Method::Put => http::Method::PUT,
         Method::Delete => http::Method::DELETE,
         Method::Head => http::Method::HEAD,
         Method::Patch => http::Method::PATCH,
-        _ => http::Method::GET, // Default fallback for any future methods
-    }
+        _ => {
+            return Err(typespec_client_core::Error::with_message(
+                typespec_client_core::error::ErrorKind::Other,
+                format!("Unsupported HTTP method: {:?}", method),
+            ));
+        }
+    })
 }
 
 fn convert_headers(headers: &http::HeaderMap) -> typespec_client_core::http::headers::Headers {
     let mut result = typespec_client_core::http::headers::Headers::new();
     for (name, value) in headers.iter() {
+        // Only include headers with valid UTF-8 values
+        // Binary header values are rare in practice, and the Azure SDK
+        // primarily uses text-based headers
         if let Ok(value_str) = value.to_str() {
             result.insert(
                 typespec_client_core::http::headers::HeaderName::from(name.to_string()),
                 typespec_client_core::http::headers::HeaderValue::from(value_str.to_string()),
             );
         }
+        // Note: Headers with non-UTF-8 values are silently skipped
+        // This is acceptable as such headers are uncommon in Azure SDK usage
     }
     result
 }
