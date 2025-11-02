@@ -88,7 +88,7 @@ impl AsyncRuntime for WstdAsyncRuntime {
 
     fn sleep(&self, duration: Duration) -> TaskFuture {
         Box::pin(async move {
-            // Convert time crate Duration to std Duration to wstd Duration  
+            // Convert time crate Duration to std Duration to wstd Duration
             // time::Duration has whole_seconds() and subsec_nanoseconds()
             let secs = duration.whole_seconds() as u64;
             let nanos = duration.subsec_nanoseconds() as u32;
@@ -115,25 +115,24 @@ impl WstdHttpClient {
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl HttpClient for WstdHttpClient {
-    async fn execute_request(&self, request: &Request) -> typespec_client_core::Result<BufResponse> {
+    async fn execute_request(
+        &self,
+        request: &Request,
+    ) -> typespec_client_core::Result<BufResponse> {
         // Convert the Azure SDK request to a wstd http request
         let url = request.url().to_string();
         let method = convert_method(request.method());
-        
-        let mut http_request = http::Request::builder()
-            .method(method)
-            .uri(&url);
-        
+
+        let mut http_request = http::Request::builder().method(method).uri(&url);
+
         // Add headers
         for (name, value) in request.headers().iter() {
             http_request = http_request.header(name.as_str(), value.as_str());
         }
-        
+
         // Add body
         let body = match request.body() {
-            typespec_client_core::http::Body::Bytes(bytes) => {
-                WstdBody::from(bytes.clone())
-            }
+            typespec_client_core::http::Body::Bytes(bytes) => WstdBody::from(bytes.clone()),
             #[cfg(not(target_arch = "wasm32"))]
             typespec_client_core::http::Body::SeekableStream(_) => {
                 return Err(typespec_client_core::Error::with_message(
@@ -142,37 +141,35 @@ impl HttpClient for WstdHttpClient {
                 ));
             }
         };
-        
-        let http_request = http_request
-            .body(body)
-            .map_err(|e| typespec_client_core::Error::with_message(
+
+        let http_request = http_request.body(body).map_err(|e| {
+            typespec_client_core::Error::with_message(
                 typespec_client_core::error::ErrorKind::Other,
                 format!("Failed to build HTTP request: {}", e),
-            ))?;
-        
+            )
+        })?;
+
         // Send the request
-        let response = self.client
-            .send(http_request)
-            .await
-            .map_err(|e| typespec_client_core::Error::with_message(
+        let response = self.client.send(http_request).await.map_err(|e| {
+            typespec_client_core::Error::with_message(
                 typespec_client_core::error::ErrorKind::Io,
                 format!("HTTP request failed: {}", e),
-            ))?;
-        
+            )
+        })?;
+
         // Convert the response
         let status = response.status();
         let headers = convert_headers(response.headers());
-        
+
         // Collect the response body into bytes
         let mut body = response.into_body();
-        let body_bytes = body
-            .contents()
-            .await
-            .map_err(|e| typespec_client_core::Error::with_message(
+        let body_bytes = body.contents().await.map_err(|e| {
+            typespec_client_core::Error::with_message(
                 typespec_client_core::error::ErrorKind::Io,
                 format!("Failed to read response body: {}", e),
-            ))?;
-        
+            )
+        })?;
+
         Ok(BufResponse::from_bytes(
             typespec_client_core::http::StatusCode::from(status.as_u16()),
             headers,

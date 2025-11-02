@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
     // Set up wstd runtime for Azure SDK
     // This configures the Azure SDK to use wstd's async runtime and HTTP client
     wstd_azure::set_wstd_runtime()?;
-    
+
     println!("wstd runtime configured for Azure SDK");
     println!("");
     println!("To use the Azure SDK:");
@@ -41,11 +41,10 @@ async fn main() -> Result<()> {
     println!("2. Make sure to use default-features = false for Azure crates");
     println!("3. Create your Azure SDK clients as normal");
     println!("4. The SDK will use wstd's wasi-http implementation automatically");
-    
+
     // Example placeholder - actual Azure SDK usage will depend on your version
     // and which services you're using. See the Azure SDK documentation at:
     // https://github.com/Azure/azure-sdk-for-rust
-    
+
     Ok(())
 }
-
