@@ -47,6 +47,7 @@ serde_json.workspace = true
 members = [
     "axum",
     "axum/macro",
+    "azure",
     "macro",
     "test-programs",
 ]
@@ -70,7 +71,10 @@ authors = [
 [workspace.dependencies]
 anyhow = "1"
 async-task = "4.7"
+async-trait = "0.1"
 axum = { version = "0.8.6", default-features = false }
+azure_core = { version = "0.29", default-features = false }
+azure_storage_blobs = { version = "0.21", default-features = false }
 bytes = "1.10.1"
 cargo_metadata = "0.22"
 clap = { version = "4.5.26", features = ["derive"] }
@@ -93,11 +97,13 @@ syn = "2.0"
 test-log = { version = "0.2", features = ["trace"] }
 test-programs = { path = "test-programs" }
 tower-service = "0.3.3"
+typespec_client_core = { version = "0.8", default-features = false, features = ["http", "json"] }
 ureq = { version = "3.1", default-features = false, features = ["json"] }
 wasip2 = "1.0"
 wstd = { path = ".", version = "=0.6.1" }
 wstd-axum = { path = "./axum", version = "=0.6.1" }
 wstd-axum-macro = { path = "./axum/macro", version = "=0.6.1" }
+wstd-azure = { path = "./azure", version = "=0.6.1" }
 wstd-macro = { path = "./macro", version = "=0.6.1" }
 
 [package.metadata.docs.rs]

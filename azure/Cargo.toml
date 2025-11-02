@@ -1,0 +1,24 @@
+[package]
+name = "wstd-azure"
+description = "wstd support for the Azure Rust SDK"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+async-trait.workspace = true
+bytes.workspace = true
+http.workspace = true
+typespec_client_core = { workspace = true }
+wstd.workspace = true
+
+[dev-dependencies]
+azure_core.workspace = true
+azure_storage_blobs.workspace = true
+clap.workspace = true
