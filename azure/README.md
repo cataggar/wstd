@@ -18,19 +18,24 @@ make sure to set the `default-features = false` setting when depending on any
 
 ## Usage
 
-To configure `wstd`'s wasi-http client and async runtime for the Azure Rust SDK,
-call `wstd_azure::set_wstd_runtime()` once at the start of your application:
+To configure `wstd`'s async runtime for the Azure Rust SDK, call 
+`wstd_azure::set_wstd_runtime()` once at the start of your application.
+You'll also need to provide the HTTP client when creating Azure SDK service clients:
 
 ```rust
-use wstd_azure::set_wstd_runtime;
+use wstd_azure::{set_wstd_runtime, http_client};
 
 #[wstd::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Set up wstd runtime for Azure SDK
+    // Set up wstd async runtime for Azure SDK
     set_wstd_runtime()?;
     
-    // Now use Azure SDK as normal
-    // ...
+    // Get the HTTP client to use with Azure SDK clients
+    let client = http_client();
+    
+    // Example: Create an Azure service client with the wstd HTTP client
+    // let blob_client = BlobServiceClient::new(...)
+    //     .with_http_client(client);
     
     Ok(())
 }
