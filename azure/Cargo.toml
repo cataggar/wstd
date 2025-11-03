@@ -20,5 +20,5 @@ wstd.workspace = true
 
 [dev-dependencies]
 azure_core.workspace = true
-azure_storage_blobs.workspace = true
+azure_storage_blob.workspace = true
 clap.workspace = true

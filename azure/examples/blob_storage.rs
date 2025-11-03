@@ -2,7 +2,7 @@
 //!
 //! This example demonstrates how to set up the wstd runtime for use with the
 //! Azure Rust SDK. The actual Azure SDK client code will depend on which
-//! version of the azure_storage_blobs crate you are using.
+//! version of the azure_storage_blob crate you are using.
 //!
 //! This example *must be compiled in release mode* - in debug mode, the azure
 //! sdk's generated code will overflow the maximum permitted wasm locals in
@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
     println!("wstd runtime configured for Azure SDK");
     println!("");
     println!("To use the Azure SDK:");
-    println!("1. Import the Azure SDK crates you need (e.g., azure_storage_blobs)");
+    println!("1. Import the Azure SDK crates you need (e.g., azure_storage_blob)");
     println!("2. Make sure to use default-features = false for Azure crates");
     println!("3. Create your Azure SDK clients as normal");
     println!("4. The SDK will use wstd's wasi-http implementation automatically");
